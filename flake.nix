@@ -21,6 +21,10 @@
         rust-version = "1.60.0";
         rust-stable = pkgs.rust-bin.stable.${rust-version}.default.override {
           extensions = [ "rust-src" ];
+          targets = [ 
+            "x86_64-unknown-linux-gnu"
+            "thumbv7em-none-eabihf"
+          ];
         };
       in
       {
