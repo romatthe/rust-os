@@ -3,24 +3,18 @@
 // We don't want to enable the standard Rust entry points
 #![no_main]
 
-use core::panic::PanicInfo;
+mod vga_buffer;
 
-static HELLO: &[u8] = b"Dag Frederik Cyriel Richard Boux!";
+use core::fmt::Write;
+use core::panic::PanicInfo;
 
 /// We don't have the C language runtime here, so we need to define our own entry point.
 /// The linker will assume a function called `_start` as the default entry point 
 /// instead (though it is not clear to me why it decides this is the default?).
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // Cast 0xb8000 to a raw pointer
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+    vga_buffer::WRITER.lock().write_str("Hello again!").unwrap();
+    write!(vga_buffer::WRITER.lock(), ", some numbers: {} {}", 42, 1.337).unwrap();
 
     loop {}
 }
