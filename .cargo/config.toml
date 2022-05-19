@@ -1,0 +1,13 @@
+[build]
+# Sets the default target to the custom target we defined for our kernel.
+target = "target.json"
+
+[unstable]
+# We want to recompile the core lib compiler_builtins for our custom target.
+# These libraries are normally shipped precompiled via rustup for the supported
+# host tripples.
+build-std = ["core", "compiler_builtins"]
+# We want implementations for `memset`, `memcpy` and `memcmp`. These are usually disabled so
+# as not to clash with the libc implemntations, but in the absence of libc we want to 
+# compile them.
+build-std-features = ["compiler-builtins-mem"]

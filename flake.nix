@@ -20,7 +20,7 @@
         };
         # rust-version = "1.60.0";
         # rust-stable = pkgs.rust-bin.stable.${rust-version}.default.override {
-        rust-stable = pkgs.rust-bin.nightly.latest.default.override {
+        rust-dist = pkgs.rust-bin.nightly.latest.default.override {
           extensions = [ "rust-src" ];
           targets = [ 
             "x86_64-unknown-linux-gnu"
@@ -31,7 +31,7 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            rust-stable
+            rust-dist
             rust-analyzer
           ];
         };

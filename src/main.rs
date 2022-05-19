@@ -6,7 +6,8 @@
 use core::panic::PanicInfo;
 
 /// We don't the C language runtime here, so we need to define our own entry point.
-/// The linker will assume a function called `_start` as the default entry point instead.
+/// The linker will assume a function called `_start` as the default entry point 
+/// instead (though it is not clear to me why it decides this is the default?).
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     loop {}
