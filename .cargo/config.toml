@@ -1,6 +1,6 @@
 [build]
 # Sets the default target to the custom target we defined for our kernel.
-target = "target.json"
+target = "kernel-target.json"
 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"

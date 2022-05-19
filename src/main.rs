@@ -5,9 +5,9 @@
 
 use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"Hello World!";
+static HELLO: &[u8] = b"Dag Frederik Cyriel Richard Boux!";
 
-/// We don't the C language runtime here, so we need to define our own entry point.
+/// We don't have the C language runtime here, so we need to define our own entry point.
 /// The linker will assume a function called `_start` as the default entry point 
 /// instead (though it is not clear to me why it decides this is the default?).
 #[no_mangle]
