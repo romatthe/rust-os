@@ -12,7 +12,7 @@ static HELLO: &[u8] = b"Hello World!";
 /// instead (though it is not clear to me why it decides this is the default?).
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // Case 0xb8000 to a raw pointer
+    // Cast 0xb8000 to a raw pointer
     let vga_buffer = 0xb8000 as *mut u8;
 
     for (i, &byte) in HELLO.iter().enumerate() {
