@@ -13,5 +13,12 @@ volatile = "0.2.6"   # Smart-pointer for volatile memory access
 x86_64 = "0.14.2"
 
 [package.metadata.bootimage]
-test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio"]
+test-args = [
+    # Special for device for controlling exitcode
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    # Serial UART for reporting test results
+    "-serial", "stdio",
+    # Don't show QEMU display
+    "-display", "none"
+]
 test-success-exit-code = 33           # (0x10 << 1) | 1
