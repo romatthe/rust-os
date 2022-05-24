@@ -8,6 +8,7 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+mod serial;
 mod vga_buffer;
 
 use core::panic::PanicInfo;
@@ -54,7 +55,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
 
     for test in tests {
         test();
@@ -66,7 +67,7 @@ fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn trivial_assertion() {
-    print!("Trivial assertion... ");
+    serial_print!("Trivial assertion... ");
     assert_eq!(1, 1);
-    println!("[ok]")
+    serial_println!("[ok]")
 }
