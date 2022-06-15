@@ -2,17 +2,12 @@
 #![no_std]
 // We don't want to enable the standard Rust entry points
 #![no_main]
-// The default Rust test framework doesn't actually work in `no_std` environments,
-// so we'll use our own
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(rust_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-mod serial;
-mod vga_buffer;
-
 use core::panic::PanicInfo;
-use x86_64::instructions::port::Port;
+use rust_os::println;
 
 /// We don't have the C language runtime here, so we need to define our own entry point.
 /// The linker will assume a function called `_start` as the default entry point 
@@ -41,44 +36,5 @@ fn panic(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    serial_println!("[failed]\n");
-    serial_println!("Error: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-
-    loop {}
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode {
-    Success = 0x10,
-    Failed = 0x11,
-}
-
-/// Writes an exit code to the special QEMU isa-debug-exit device mounted at IO port `0xf4`.
-/// NOTE: See `cargo.toml` test-args for how this device is mounted in QEMU. 
-pub fn exit_qemu(exit_code: QemuExitCode) {
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
-}
-
-#[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) {
-    serial_println!("Running {} tests", tests.len());
-
-    for test in tests {
-        test();
-    }
-
-    // Exit QEMU through the isa-debug-exit device
-    exit_qemu(QemuExitCode::Success);
-}
-
-#[test_case]
-fn trivial_assertion() {
-    serial_print!("Trivial assertion... ");
-    assert_eq!(1, 1);
-    serial_println!("[ok]")
+    rust_os::test_panic_handler(info);
 }
