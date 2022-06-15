@@ -79,6 +79,6 @@ fn test_runner(tests: &[&dyn Fn()]) {
 #[test_case]
 fn trivial_assertion() {
     serial_print!("Trivial assertion... ");
-    assert_eq!(1, 2);
+    assert_eq!(1, 1);
     serial_println!("[ok]")
 }

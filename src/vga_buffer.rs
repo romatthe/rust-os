@@ -107,12 +107,6 @@ impl Writer {
                     ascii_character: byte, 
                     color_code 
                 });
-                // unsafe {
-                //     core::ptr::write_volatile(&mut self.buffer.chars[row][col], ScreenChar { 
-                //         ascii_character: byte, 
-                //         color_code 
-                //     });
-                // }
 
                 // Move the column to the right
                 self.column_position += 1;
@@ -161,5 +155,23 @@ impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_string(s);
         Ok(())
+    }
+}
+
+#[test_case]
+fn test_println_many() {
+    for _ in 0..200 {
+        println!("test_println_many_output");
+    }
+}
+
+#[test_case]
+fn test_println_output() {
+    let s = "Some test string that fits into a single line";
+    println!("{}", s);
+
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = VGA_WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
     }
 }
