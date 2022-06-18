@@ -14,13 +14,21 @@ use rust_os::println;
 /// instead (though it is not clear to me why it decides this is the default?).
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+    println!("Hello Kernel{}", "!");
+
+    // General initialization routine
+    rust_os::init();
+
+    // Invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3();
 
     // We just run our test cases here when our binary is conditionally compiled
     // for test releases
     #[cfg(test)]
     test_main();
 
+    println!("It did not crash!");
+    
     loop {}
 }
 

@@ -3,9 +3,12 @@
 // The default Rust test framework doesn't actually work in `no_std` environments,
 // so we'll use our own
 #![feature(custom_test_frameworks)]
+// Allows the use of the x86-interrupt ABI calling convention
+#![feature(abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
 
@@ -16,6 +19,7 @@ use x86_64::instructions::port::Port;
 #[cfg(test)]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init();
     test_main();
 
     loop {}
@@ -25,6 +29,11 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     test_panic_handler(info);
+}
+
+/// Initializastion routine that can be used in the kernel and integration tests
+pub fn init() {
+    interrupts::init_idt();
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
