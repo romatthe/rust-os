@@ -19,8 +19,12 @@ pub extern "C" fn _start() -> ! {
     // General initialization routine
     rust_os::init();
 
-    // Invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
+    fn stack_overflow() {
+        stack_overflow();
+    }
+    
+    // Trigger a stack overflow
+    stack_overflow();
 
     // We just run our test cases here when our binary is conditionally compiled
     // for test releases
@@ -28,7 +32,7 @@ pub extern "C" fn _start() -> ! {
     test_main();
 
     println!("It did not crash!");
-    
+
     loop {}
 }
 

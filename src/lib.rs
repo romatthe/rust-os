@@ -8,6 +8,7 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod gdt;
 pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
@@ -33,6 +34,7 @@ fn panic(info: &PanicInfo) -> ! {
 
 /// Initializastion routine that can be used in the kernel and integration tests
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
 
