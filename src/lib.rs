@@ -14,7 +14,7 @@ pub mod serial;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
-use x86_64::instructions::port::Port;
+use x86_64::instructions::{self, port::Port};
 
 /// Entry point for `cargo test`
 #[cfg(test)]
@@ -23,7 +23,7 @@ pub extern "C" fn _start() -> ! {
     init();
     test_main();
 
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
@@ -53,6 +53,13 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     unsafe {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
+    }
+}
+
+/// Simple loop that halts the CPU until the next interrupt arrives.
+pub fn hlt_loop() -> ! {
+    loop {
+        instructions::hlt();
     }
 }
 
@@ -89,5 +96,5 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     // Exit QEMU through the isa-debug-exit device
     exit_qemu(QemuExitCode::Failed);
 
-    loop {}
+    hlt_loop();
 }

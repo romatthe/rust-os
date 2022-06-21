@@ -7,7 +7,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use rust_os::println;
+use rust_os::{hlt_loop, println};
 
 /// We don't have the C language runtime here, so we need to define our own entry point.
 /// The linker will assume a function called `_start` as the default entry point 
@@ -26,7 +26,8 @@ pub extern "C" fn _start() -> ! {
 
     println!("It did not crash!");
 
-    loop {}
+    // Loop until the next interrupt arrives
+    hlt_loop();
 }
 
 /// This function is called on a panic. It just loops and never terminates.
@@ -35,7 +36,7 @@ pub extern "C" fn _start() -> ! {
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
 
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
