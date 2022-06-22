@@ -1,7 +1,9 @@
 use crate::{gdt, print, println};
-use pic8259::ChainedPics;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use lazy_static::lazy_static;
+use pc_keyboard::{DecodedKey, HandleControl, Keyboard, ScancodeSet1, layouts};
+use pic8259::ChainedPics;
+use spin::Mutex;
+use x86_64::{instructions::port::Port, structures::idt::{InterruptDescriptorTable, InterruptStackFrame}};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -25,6 +27,7 @@ lazy_static! {
         }
 
         idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
+        idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
 
         idt
     };
@@ -34,6 +37,7 @@ lazy_static! {
 #[repr(u8)]
 pub enum InterruptIndex {
     Timer = PIC_1_OFFSET,
+    Keyboard,
 }
 
 impl InterruptIndex {
@@ -74,13 +78,40 @@ extern "x86-interrupt" fn double_fault_handler(frame: InterruptStackFrame, _: u6
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", frame);
 }
 
-/// Handles a hardware interrupt from the Timer slot of the primary PIC
+/// Handles a hardware interrupt from the Timer slot of the primary PIC.
 extern "x86-interrupt" fn timer_interrupt_handler(_: InterruptStackFrame) {
     print!(".");
-
+    
     // Notify the PIC that we're done reacting to the interrupt with an EOI signal
     unsafe {
         PICS.lock().notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
+    }
+}
+
+/// Handles input interrupts from a PS/2 keyboard.
+extern "x86-interrupt" fn keyboard_interrupt_handler(_: InterruptStackFrame) {
+    lazy_static! {
+        static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> = 
+            Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1, HandleControl::Ignore));
+    }
+
+    // Read the keyboard character scancode from IO port 0x60
+    let mut keyboard = KEYBOARD.lock();
+    let mut port = Port::new(0x60);
+    let scancode: u8 = unsafe { port.read() };
+
+    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+        if let Some(key) = keyboard.process_keyevent(key_event) {
+            match key {
+                DecodedKey::Unicode(character) => print!("{}", character),
+                DecodedKey::RawKey(key) => print!("{:?}", key),
+            }
+        }
+    } 
+
+    // Notify the PIC that we're done reacting to the interrupt with an EOI signal
+    unsafe {
+        PICS.lock().notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
     }
 }
 
